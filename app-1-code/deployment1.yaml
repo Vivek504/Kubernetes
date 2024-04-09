@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app1
+  template:
+    metadata:
+      labels:
+        app: app1
+    spec:
+      volumes:
+        - name: pv-storage
+          persistentVolumeClaim:
+            claimName: pvc
+      containers:
+        - name: container1
+          image: us-central1-docker.pkg.dev/kubernetes-417516/kubernetes-repository/app1
+          ports:
+            - containerPort: 3000
+              name: "http-server"
+          volumeMounts:
+            - mountPath: /vivek_PV_dir
+              name: pv-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pod1-service
+spec:
+  selector:
+    app: app1
+  type: LoadBalancer
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 3000

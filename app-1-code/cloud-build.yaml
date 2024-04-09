@@ -1,0 +1,23 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/kubernetes-417516/kubernetes-repository/app1:$SHORT_SHA', './app1']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/kubernetes-417516/kubernetes-repository/app1:$SHORT_SHA']
+
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args: ['apply', '-f', 'pvc.yaml']
+    env:
+    - 'CLOUDSDK_COMPUTE_REGION=us-central1'
+    - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=kubernetes-cluster'
+
+  - name: "gcr.io/cloud-builders/gke-deploy"
+    args:
+      - run
+      - --filename=deployment1.yaml
+      - --image=us-central1-docker.pkg.dev/kubernetes-417516/kubernetes-repository/app1:$SHORT_SHA
+      - --location=us-central1
+      - --cluster=kubernetes-cluster
+
+images: ['us-central1-docker.pkg.dev/kubernetes-417516/kubernetes-repository/app1:$SHORT_SHA']
